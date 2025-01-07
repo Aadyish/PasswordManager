@@ -142,7 +142,7 @@ function App() {
             Add Password
           </button>
         <button className="secondary-btn" onClick={fetchStoredPasswords}>
-          Retrieve Stored Passwords
+          Retrieve Passwords
         </button>
         {message && <p className="message">{message}</p>}
         <div className="password-list">
@@ -161,13 +161,13 @@ function App() {
                 <p>
                   <strong>Password:</strong>{" "}
                   {item.showPassword ? item.password : "••••••••"}
-                  <button
+                </p>
+                <button
                     className="toggle-btn"
                     onClick={() => toggleShowPassword(index)}
                   >
                     {item.showPassword ? "Hide" : "Show"}
                   </button>
-                </p>
               </div>
             ))
           )}
