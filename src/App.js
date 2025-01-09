@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { ethers } from "ethers";
-import abi from "./contracts/PasswordManagerABI.json";
+import { ethers } from "ethers"; // web3
+import abi from "./contracts/PasswordManagerABI.json"; // importing contract abi
+import CryptoJS from "crypto-js"; // importing encryption 
 import "./App.css";
 
 const contractAddress = "0xcEAa0Fedf6cD76B427409cb6F4B8B271692336Ab";
+
+const secretKey = "b1e7f9c0287d4a65bf394f0b4b5e3dc3"; // key used for encryption 
+
 
 function App() {
   const [walletAddress, setWalletAddress] = useState("");
@@ -14,7 +18,9 @@ function App() {
   const [storedPasswords, setStoredPasswords] = useState([]);
   const [contract, setContract] = useState(null);
 
-  const connectWallet = async () => {
+  
+
+  const connectWallet = async () => { // function to connect website to metamask wallet
     if (window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
@@ -27,7 +33,6 @@ function App() {
 
         setMessage("Wallet connected successfully!");
       } catch (error) {
-        console.error("Wallet connection failed:", error);
         setMessage("Failed to connect wallet.");
       }
     } else {
@@ -35,13 +40,30 @@ function App() {
     }
   };
 
-  const addPassword = async () => {
-    if (!walletAddress) {
-      setMessage("Please connect your wallet first.");
+  const encryptPassword = (password) => { // encryption function to encrypt passwords
+    return CryptoJS.AES.encrypt(password, secretKey).toString();
+  };
+  
+  const decryptPassword = (encryptedPassword) => { // function to decrypt encrypted password
+    if (!encryptedPassword.startsWith("U2FsdGVkX1")) { 
+      return encryptedPassword; 
+    }
+  
+    try {
+      const bytes = CryptoJS.AES.decrypt(encryptedPassword, secretKey);
+      return bytes.toString(CryptoJS.enc.Utf8) || "Decryption failed";
+    } catch (error) {
+      return "Decryption failed";
+    }
+  };
+
+  const addPassword = async () => { // function to add password to the system 
+    if (!walletAddress) { // checks if user has connected their wallet to the app 
+      setMessage("Connect to wallet"); 
       return;
     }
-    if (!websiteName || !username || !password) {
-      setMessage("Please fill in all fields.");
+    if (!websiteName || !username || !password) { // checks if the user has given an input for all the fields
+      setMessage("Fill in the fields");
       return;
     }
     if (!contract) {
@@ -49,21 +71,21 @@ function App() {
       return;
     }
     try {
-      const tx = await contract.addPassword(websiteName, username, password);
+      const encryptedPassword = encryptPassword(password);
+      const tx = await contract.addPassword(websiteName, username, encryptedPassword);
       setMessage("Adding password...");
       await tx.wait();
-      setMessage("Password added successfully");
+      setMessage("Password added has been added");
       setWebsiteName("");
       setUsername("");
       setPassword("");
-      fetchStoredPasswords();
+      getPasswords();
     } catch (error) {
-      console.error("Error adding password:", error);
       setMessage(`Failed to add password: ${error.reason || error.message}`);
     }
   };
 
-  const fetchStoredPasswords = async () => {
+  const getPasswords = async () => {
     if (!walletAddress) {
       setMessage("Please connect your wallet first.");
       return;
@@ -81,18 +103,22 @@ function App() {
       }
       const passwords = [];
       for (let i = 0; i < passwordCount; i++) {
-        const [website, user, pass] = await contract.getPassword(walletAddress, i);
-        passwords.push({ website, username: user, password: pass, showPassword: false });
+        const [website, user, encryptedPass] = await contract.getPassword(walletAddress, i);
+
+        // Check if the password is encrypted or not
+        const decryptedPass = decryptPassword(encryptedPass);
+        
+        passwords.push({ website, username: user, password: decryptedPass, showPassword: false });
       }
       setStoredPasswords(passwords);
-      setMessage("Passwords fetched");
+      setMessage("Passwords retrieved");
     } catch (error) {
-      console.error("Error retrieving passwords:", error);
       setMessage("Failed to retrieve stored passwords.");
     }
   };
+  
 
-  const toggleShowPassword = (index) => {
+  const displayPassword = (index) => { // allows password to be hidden or displayed 
     setStoredPasswords((prevPasswords) =>
       prevPasswords.map((item, idx) =>
         idx === index ? { ...item, showPassword: !item.showPassword } : item
@@ -100,7 +126,7 @@ function App() {
     );
   };
 
-  return (
+  return ( // html to display all the data for the password manager 
     <div className="App">
       <header className="App-header">
         <h1>Decentralised Password Manager</h1>
@@ -141,12 +167,11 @@ function App() {
         <button className="primary-btn" onClick={addPassword}>
             Add Password
           </button>
-        <button className="secondary-btn" onClick={fetchStoredPasswords}>
+        <button className="secondary-btn" onClick={getPasswords}>
           Retrieve Passwords
         </button>
         {message && <p className="message">{message}</p>}
         <div className="password-list">
-          <h2></h2>
           {storedPasswords.length === 0 ? (
             <p></p>
           ) : (
@@ -163,8 +188,8 @@ function App() {
                   {item.showPassword ? item.password : "••••••••"}
                 </p>
                 <button
-                    className="toggle-btn"
-                    onClick={() => toggleShowPassword(index)}
+                    className="show-btn"
+                    onClick={() => displayPassword(index)}
                   >
                     {item.showPassword ? "Hide" : "Show"}
                   </button>

@@ -252,7 +252,7 @@ h5 {
   font-size: 20px;
 }
 
-.toggle-btn {
+.show-btn {
   background-color: black;
   color: white;
   border: none;
@@ -264,7 +264,7 @@ h5 {
   width: 10%;
 }
 
-.toggle-btn:hover {
+.show-btn:hover {
   background-color: white;
   color: black;
 }

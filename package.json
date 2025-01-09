@@ -2,14 +2,18 @@
   "name": "test-newapp",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
+    "@iexec/dataprotector": "^2.0.0-beta.10",
     "@metamask/sdk-react": "^0.31.4",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
+    "crypto-js": "^4.2.0",
     "ethers": "^6.13.5",
+    "graphql": "^16.10.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1",
@@ -39,5 +43,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
