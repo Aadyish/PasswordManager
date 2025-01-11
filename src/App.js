@@ -30,13 +30,12 @@ function App() {
 
         const contractInstance = new ethers.Contract(contractAddress, abi, signer);
         setContract(contractInstance);
-
-        setMessage("Wallet connected successfully!");
+        setMessage("Wallet connected");
       } catch (error) {
-        setMessage("Failed to connect wallet.");
+        setMessage("Failed to connect");
       }
     } else {
-      setMessage("MetaMask not detected. Please install it.");
+      setMessage("MetaMask not detected.");
     }
   };
 
@@ -67,7 +66,7 @@ function App() {
       return;
     }
     if (!contract) {
-      setMessage("Contract instance not found. Please reconnect your wallet.");
+      setMessage("Contract not found");
       return;
     }
     try {
@@ -75,7 +74,7 @@ function App() {
       const tx = await contract.addPassword(websiteName, username, encryptedPassword);
       setMessage("Adding password...");
       await tx.wait();
-      setMessage("Password added has been added");
+      setMessage("Password has been added");
       setWebsiteName("");
       setUsername("");
       setPassword("");
